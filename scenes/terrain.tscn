@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bjyjj0otjnh6q"]
+
+[ext_resource type="PackedScene" uid="uid://cdcr1xhxkw57w" path="res://models/terrain.blend" id="1_206su"]
+
+[node name="terrain" instance=ExtResource("1_206su")]
+
+[node name="StaticBody3D" parent="Landscape_001" index="0"]
+collision_layer = 3

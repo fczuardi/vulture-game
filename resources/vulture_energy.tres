@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="Energy" load_steps=2 format=3 uid="uid://s6facu7fxrhq"]
+
+[ext_resource type="Script" uid="uid://cl3x8h8soeory" path="res://gameplay/energy.gd" id="1_dv533"]
+
+[resource]
+script = ExtResource("1_dv533")
+metadata/_custom_type_script = "uid://cl3x8h8soeory"

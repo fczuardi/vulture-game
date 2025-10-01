@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="HungerMeter" load_steps=2 format=3 uid="uid://dyjqvxbc4aa04"]
+
+[ext_resource type="Script" uid="uid://b3akvyfsbhxp0" path="res://gameplay/hunger_meter.gd" id="1_8bhfo"]
+
+[resource]
+script = ExtResource("1_8bhfo")
+max_time = 91.0
+metadata/_custom_type_script = "uid://b3akvyfsbhxp0"

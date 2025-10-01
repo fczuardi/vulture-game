@@ -1,0 +1,112 @@
+[gd_scene load_steps=18 format=3 uid="uid://cflocf5wgc4pg"]
+
+[ext_resource type="PackedScene" uid="uid://3753u4ch20n2" path="res://scenes/vulture.tscn" id="1_ig7tw"]
+[ext_resource type="Resource" uid="uid://s6facu7fxrhq" path="res://resources/vulture_energy.tres" id="2_7mycd"]
+[ext_resource type="PackedScene" uid="uid://bkcir3vq7cq48" path="res://scenes/camera_rig.tscn" id="2_h2yge"]
+[ext_resource type="PackedScene" uid="uid://ci5ibqk2a7l3i" path="res://scenes/world.tscn" id="3_1bvp3"]
+[ext_resource type="PackedScene" uid="uid://d1btpa7ykn80c" path="res://scenes/mobile_input.tscn" id="4_1bvp3"]
+[ext_resource type="Script" uid="uid://h8oxbc727lmq" path="res://ui/energy_bar.gd" id="6_272bh"]
+[ext_resource type="Script" uid="uid://bwl8vnwkkjyc6" path="res://ui/hunger_bar.gd" id="6_kek77"]
+[ext_resource type="Script" uid="uid://dgn78q1wtg04j" path="res://gameplay/hunger_ticker.gd" id="8_4c57u"]
+[ext_resource type="Resource" uid="uid://dyjqvxbc4aa04" path="res://resources/hunger.tres" id="9_efxa6"]
+
+[sub_resource type="Gradient" id="Gradient_272bh"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_5vw27"]
+gradient = SubResource("Gradient_272bh")
+width = 300
+height = 30
+
+[sub_resource type="Gradient" id="Gradient_kek77"]
+colors = PackedColorArray(0, 0.98039216, 1, 1, 0, 1, 0.40805173, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_4c57u"]
+gradient = SubResource("Gradient_kek77")
+width = 290
+height = 20
+
+[sub_resource type="Gradient" id="Gradient_1bvp3"]
+colors = PackedColorArray(1, 1, 1, 0.5019608, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_lquwl"]
+gradient = SubResource("Gradient_1bvp3")
+width = 300
+height = 15
+
+[sub_resource type="Gradient" id="Gradient_7mycd"]
+colors = PackedColorArray(1, 0.13107526, 0, 1, 1, 0.8035968, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_272bh"]
+gradient = SubResource("Gradient_7mycd")
+width = 290
+height = 5
+
+[node name="Main" type="Node3D"]
+
+[node name="Player" parent="." node_paths=PackedStringArray("cam_rig") instance=ExtResource("1_ig7tw")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 70, 0)
+cam_rig = NodePath("../CameraRig")
+
+[node name="CameraRig" parent="." instance=ExtResource("2_h2yge")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 70, 0)
+
+[node name="World" parent="." instance=ExtResource("3_1bvp3")]
+
+[node name="HUD" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Meters" type="MarginContainer" parent="HUD"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 100.0
+grow_horizontal = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 22
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HUD/Meters"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUD/Meters/VBoxContainer"]
+layout_mode = 2
+
+[node name="HungerBar" type="TextureProgressBar" parent="HUD/Meters/VBoxContainer/HBoxContainer" node_paths=PackedStringArray("bar", "label")]
+layout_mode = 2
+value = 100.0
+texture_under = SubResource("GradientTexture2D_5vw27")
+texture_progress = SubResource("GradientTexture2D_4c57u")
+texture_progress_offset = Vector2(5, 5)
+script = ExtResource("6_kek77")
+hunger = ExtResource("9_efxa6")
+bar = NodePath(".")
+label = NodePath("../TimeLabel")
+
+[node name="TimeLabel" type="Label" parent="HUD/Meters/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "00:00"
+
+[node name="EnergyBar" type="TextureProgressBar" parent="HUD/Meters/VBoxContainer" node_paths=PackedStringArray("energy_bar")]
+layout_mode = 2
+size_flags_horizontal = 0
+value = 100.0
+texture_under = SubResource("GradientTexture2D_lquwl")
+texture_progress = SubResource("GradientTexture2D_272bh")
+texture_progress_offset = Vector2(5, 5)
+script = ExtResource("6_272bh")
+energy = ExtResource("2_7mycd")
+energy_bar = NodePath(".")
+
+[node name="MobileInput" parent="HUD" instance=ExtResource("4_1bvp3")]
+layout_mode = 1
+
+[node name="HungerTicker" type="Node" parent="."]
+script = ExtResource("8_4c57u")
+hunger = ExtResource("9_efxa6")

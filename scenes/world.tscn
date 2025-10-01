@@ -1,0 +1,43 @@
+[gd_scene load_steps=5 format=3 uid="uid://ci5ibqk2a7l3i"]
+
+[ext_resource type="PackedScene" uid="uid://bjyjj0otjnh6q" path="res://scenes/terrain.tscn" id="1_f3sb7"]
+
+[sub_resource type="PhysicalSkyMaterial" id="PhysicalSkyMaterial_getpj"]
+rayleigh_coefficient = 0.5
+rayleigh_color = Color(0.3852404, 0.51142323, 0.9520558, 1)
+turbidity = 3.0
+sun_disk_scale = 6.0
+ground_color = Color(0.80389863, 0.5604254, 0.29885572, 1)
+energy_multiplier = 4.0
+
+[sub_resource type="Sky" id="Sky_0xm2m"]
+sky_material = SubResource("PhysicalSkyMaterial_getpj")
+
+[sub_resource type="Environment" id="Environment_h2yge"]
+background_mode = 2
+sky = SubResource("Sky_0xm2m")
+ambient_light_source = 3
+ambient_light_sky_contribution = 0.34
+reflected_light_source = 2
+tonemap_mode = 3
+tonemap_exposure = 0.7
+tonemap_white = 0.4
+adjustment_enabled = true
+adjustment_contrast = 0.7
+adjustment_saturation = 0.81
+
+[node name="World" type="Node3D"]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.99978065, -0.019417549, 0.0078452, 0, 0.37460664, 0.92718387, -0.0209425, 0.9269805, -0.37452447, 0, 72, 0)
+light_color = Color(0.98605216, 0.98605216, 0.84948665, 1)
+light_energy = 1.7
+light_angular_distance = 0.5
+light_specular = 0.05
+shadow_enabled = true
+directional_shadow_max_distance = 5.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_h2yge")
+
+[node name="terrain" parent="." instance=ExtResource("1_f3sb7")]

@@ -1,0 +1,101 @@
+[gd_scene load_steps=3 format=3 uid="uid://d1btpa7ykn80c"]
+
+[ext_resource type="Script" uid="uid://dc3wwdygvep3b" path="res://addons/touch_screen_joystick/touch_screen_joystick.gd" id="1_j3y1m"]
+[ext_resource type="Script" uid="uid://upt1yy6gwje" path="res://ui/mobile_input.gd" id="1_nu7yv"]
+
+[node name="MobileInput" type="MarginContainer" node_paths=PackedStringArray("paused_ui", "on_screen_controls", "input_to_continue_title", "input_to_continue_subtitle")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_nu7yv")
+paused_ui = NodePath("Paused UI")
+on_screen_controls = NodePath("On-Screen Controls")
+input_to_continue_title = NodePath("Paused UI/MarginContainer/InputToContinueTitle")
+input_to_continue_subtitle = NodePath("Paused UI/MarginContainer/InputToContinueSubtitle")
+
+[node name="On-Screen Controls" type="MarginContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 150
+theme_override_constants/margin_right = 150
+theme_override_constants/margin_bottom = 150
+
+[node name="DirectionStick" type="Control" parent="On-Screen Controls"]
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+mouse_filter = 1
+script = ExtResource("1_j3y1m")
+antialiased = true
+deadzone = 40.0
+base_radius = 150.0
+knob_radius = 100.0
+color = Color(1, 0.975, 0.75, 1)
+thickness = 8.0
+use_input_actions = true
+action_left = &"fly_roll_left"
+action_right = &"fly_roll_right"
+action_up = &"fly_pitch_down"
+action_down = &"fly_pitch_up"
+metadata/_custom_type_script = "uid://dc3wwdygvep3b"
+
+[node name="CamStick" type="Control" parent="On-Screen Controls"]
+visible = false
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 8
+mouse_filter = 1
+script = ExtResource("1_j3y1m")
+antialiased = true
+base_radius = 73.5
+knob_radius = 40.0
+color = Color(1, 0.975, 0.75, 1)
+thickness = 8.0
+use_input_actions = true
+action_left = &"cam_look_left"
+action_right = &"cam_look_right"
+action_up = &"cam_look_up"
+action_down = &"cam_look_down"
+metadata/_custom_type_script = "uid://dc3wwdygvep3b"
+
+[node name="Paused UI" type="Control" parent="."]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="Paused UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Paused UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_top = 233
+
+[node name="InputToContinueTitle" type="Label" parent="Paused UI/MarginContainer"]
+layout_mode = 2
+text = "Interact  to Start"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InputToContinueSubtitle" type="Label" parent="Paused UI/MarginContainer"]
+layout_mode = 2
+text = "
+
+Touch, Click or press W to Start"
+horizontal_alignment = 1
+vertical_alignment = 1

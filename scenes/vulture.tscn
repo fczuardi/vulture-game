@@ -1,0 +1,74 @@
+[gd_scene load_steps=9 format=3 uid="uid://3753u4ch20n2"]
+
+[ext_resource type="Script" uid="uid://cxsgoo1avl7oj" path="res://gameplay/vulture.gd" id="1_n6rmw"]
+[ext_resource type="Material" uid="uid://b2gwvhnvtq2u" path="res://materials/vulture_body.tres" id="2_c8iyd"]
+[ext_resource type="Material" uid="uid://hbxci5d5nvgb" path="res://materials/vulture_head.tres" id="3_f4m6w"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_qxjel"]
+size = Vector3(2.3, 0.2, 0.85)
+
+[sub_resource type="BoxMesh" id="BoxMesh_qxjel"]
+size = Vector3(0.3, 0.3, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_n6rmw"]
+size = Vector3(1.15, 0.05, 0.85)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_6j23y"]
+top_radius = 0.05
+bottom_radius = 0.15
+height = 0.26
+
+[sub_resource type="BoxMesh" id="BoxMesh_c8iyd"]
+size = Vector3(0.1, 0.1, 0.1)
+
+[node name="Vulture" type="CharacterBody3D"]
+script = ExtResource("1_n6rmw")
+pitch_limit_deg = 40.0
+climb_rate = 20.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_qxjel")
+
+[node name="model" type="Node3D" parent="."]
+
+[node name="body" type="MeshInstance3D" parent="model"]
+mesh = SubResource("BoxMesh_qxjel")
+skeleton = NodePath("../..")
+surface_material_override/0 = ExtResource("2_c8iyd")
+
+[node name="wings" type="Node3D" parent="model"]
+
+[node name="LeftWing" type="Node3D" parent="model/wings"]
+
+[node name="wing" type="MeshInstance3D" parent="model/wings/LeftWing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 0, 0)
+mesh = SubResource("BoxMesh_n6rmw")
+skeleton = NodePath("../../../..")
+surface_material_override/0 = ExtResource("2_c8iyd")
+
+[node name="RightWing" type="Node3D" parent="model/wings"]
+
+[node name="wing" type="MeshInstance3D" parent="model/wings/RightWing"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 0, 0)
+mesh = SubResource("BoxMesh_n6rmw")
+skeleton = NodePath("../../../..")
+surface_material_override/0 = ExtResource("2_c8iyd")
+
+[node name="neck" type="Node3D" parent="model"]
+transform = Transform3D(1, 0, 0, 0, 0.8378902, -0.5458388, 0, 0.5458388, 0.8378902, 0, 0, -0.49990374)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="model/neck"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, -0.13)
+mesh = SubResource("CylinderMesh_6j23y")
+surface_material_override/0 = ExtResource("3_f4m6w")
+
+[node name="head" type="Node3D" parent="model/neck"]
+transform = Transform3D(1, 0, 0, 0, 0.84372896, 0.5367696, 0, -0.5367696, 0.84372896, 0, -2.9802322e-08, -0.2588978)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="model/neck/head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.05)
+mesh = SubResource("BoxMesh_c8iyd")
+skeleton = NodePath("../..")
+surface_material_override/0 = ExtResource("3_f4m6w")
+
+[node name="Player" type="Node3D" parent="."]

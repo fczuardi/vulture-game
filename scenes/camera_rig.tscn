@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3 uid="uid://bkcir3vq7cq48"]
+
+[ext_resource type="Script" uid="uid://uk5t1yxbhncy" path="res://gameplay/camera_rig.gd" id="1_0vvw7"]
+
+[node name="CameraRig" type="Node3D" node_paths=PackedStringArray("yaw_node", "pitch_node", "spring_arm")]
+script = ExtResource("1_0vvw7")
+yaw_node = NodePath("YawNode")
+pitch_node = NodePath("YawNode/PitchNode")
+spring_arm = NodePath("YawNode/PitchNode/SpringArm")
+
+[node name="YawNode" type="Node3D" parent="."]
+
+[node name="PitchNode" type="Node3D" parent="YawNode"]
+
+[node name="SpringArm" type="SpringArm3D" parent="YawNode/PitchNode"]
+transform = Transform3D(1, 0, 0, 0, 0.9848077, 0.17364818, 0, -0.17364818, 0.9848077, 0, 0, 0)
+collision_mask = 2
+spring_length = 5.0
+
+[node name="Camera3D" type="Camera3D" parent="YawNode/PitchNode/SpringArm"]
+transform = Transform3D(1, 0, 0, 0, 0.9999999, 0, 0, 0, 0.9999999, 0, 0, 0)
