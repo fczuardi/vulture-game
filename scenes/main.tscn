@@ -108,6 +108,17 @@ energy_bar = NodePath(".")
 [node name="MobileInput" parent="HUD" instance=ExtResource("4_1bvp3")]
 layout_mode = 1
 
+[node name="BuildNumberLabel" type="Label" parent="HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Build ID: vssoxxzu "
+horizontal_alignment = 2
+vertical_alignment = 2
+
 [node name="HungerTicker" type="Node" parent="."]
 script = ExtResource("8_4c57u")
 hunger = ExtResource("9_efxa6")
