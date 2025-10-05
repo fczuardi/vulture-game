@@ -10,12 +10,18 @@ extends CharacterBody3D
 @export var yaw_from_bank: float = 0.7 # banked turn rate
 @export var cam_turn_smooth: float = 5.0
 
-@export var climb_energy_per_sec: float = 12.0
+@export var climb_energy_per_sec: float = 50.0
 @export var glide_regen_per_sec: float = 1.0
 
-@export var pitch_speed: float = 2.8 # rad/s for pitch input
-@export var pitch_return: float = 2.6 # auto-level pitch speed
+@export var pitch_speed: float = 2.0 # rad/s for pitch input
+@export var pitch_return: float = 1.8 # auto-level pitch speed
 @export var pitch_limit_deg: float = 28.0 # clamp so it stays tame
+@export var thermal_pitch_offset_deg: float = 10.0   # slight nose-up bias when inside a thermal
+@export var thermal_dive_multiplier: float = 0.1    # 0..1: reduce dive input strength in thermals
+@export var thermal_pitch_return_scale: float = 0.8 # auto-level rate multiplier in thermals
+
+
+
 @export var climb_rate: float = 10.0 # vertical m/s at full pitch (sin)
 @export var speed_pitch_influence: float = 1.0 # faster down, slower up
 
@@ -27,6 +33,16 @@ var _pitch := 0.0
 
 signal climb_executed(climb_speed: float, player_driven: bool)
 
+var _thermal_contacts := 0
+
+func enter_thermal() -> void:
+    _thermal_contacts += 1
+
+func exit_thermal() -> void:
+    _thermal_contacts = max(0, _thermal_contacts - 1)
+
+func is_in_thermal() -> bool:
+    return _thermal_contacts > 0
 
 func _physics_process(delta: float) -> void:
     # --- Input (with deadzones) ---
@@ -41,7 +57,10 @@ func _physics_process(delta: float) -> void:
     var wants_climb := i_pitch > 0.0
     if energy_resource != null:
         if wants_climb:
-            if energy_resource.current > 0.0:
+            if is_in_thermal():
+                # free climb inside thermals (no spend)
+                pass
+            elif energy_resource.current > 0.0:
                 energy_resource.spend(climb_energy_per_sec * i_pitch * delta)
             else:
                 # out of energy: no climbing
@@ -49,6 +68,7 @@ func _physics_process(delta: float) -> void:
         else:
             # gentle regen when not pitching up
             energy_resource.regen(glide_regen_per_sec * delta)
+
 
     # --- Roll ---
     _roll += i_roll * roll_speed * delta
@@ -60,11 +80,25 @@ func _physics_process(delta: float) -> void:
     _yaw = wrapf(_yaw, -PI, PI)
 
     # --- Pitch ---
-    _pitch += i_pitch * pitch_speed * delta
+    # Soften dive input in thermals
+    var i_pitch_eff := i_pitch
+    if is_in_thermal() and i_pitch < 0.0:
+        i_pitch_eff *= thermal_dive_multiplier
+
+    # Integrate pitch from input
+    _pitch += i_pitch_eff * pitch_speed * delta
+
+    # Auto-level toward 0 normally, or toward a slight nose-up offset inside thermals
     var limit := deg_to_rad(pitch_limit_deg)
+    var thermal_offset := deg_to_rad(thermal_pitch_offset_deg)
+    var target_pitch := thermal_offset if is_in_thermal() else 0.0
+
     _pitch = clamp(_pitch, -limit, limit)
+
     if i_pitch == 0.0:
-        _pitch = lerp(_pitch, 0.0, pitch_return * delta)
+        var return_scale := thermal_pitch_return_scale if is_in_thermal() else  1.0
+        _pitch = lerp(_pitch, target_pitch, pitch_return * return_scale * delta)
+
 
     # --- Apply orientation ---
     rotation = Vector3(_pitch, _yaw, _roll)

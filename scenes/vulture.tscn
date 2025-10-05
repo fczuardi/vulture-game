@@ -21,7 +21,7 @@ height = 0.26
 [sub_resource type="BoxMesh" id="BoxMesh_c8iyd"]
 size = Vector3(0.1, 0.1, 0.1)
 
-[node name="Vulture" type="CharacterBody3D"]
+[node name="Vulture" type="CharacterBody3D" groups=["players"]]
 script = ExtResource("1_n6rmw")
 pitch_limit_deg = 40.0
 climb_rate = 20.0

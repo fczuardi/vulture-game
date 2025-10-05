@@ -24,6 +24,10 @@ movie_writer/movie_file="/var/home/fcz/dev/vulture/gameplay.ogv"
 
 enabled=PackedStringArray("res://addons/GDQuest_GDScript_formatter/plugin.cfg")
 
+[global_group]
+
+players=""
+
 [input]
 
 fly_pitch_up={

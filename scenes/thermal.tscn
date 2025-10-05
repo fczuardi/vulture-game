@@ -8,21 +8,34 @@ resource_name = "orbit"
 script/source = "@tool
 extends Node3D
 
+# --- Birds / layout ---
 @export var num_birds: int = 3 : set = _set_num
 @export var radius: float = 10.0
-@export var height: float = 40.0
+@export var height: float = 40.0                    # interpreted as \"top\" of the column
 @export var start_phase_deg: float = 0.0
 @export var orbit_deg_per_sec: float = 18.0
-@export var direction: int = 1      # 1 = CCW, -1 = CW
+@export var direction: int = 1                      # 1 = CCW, -1 = CW
 @export var bank_deg: float = 12.0
 @export var rebuild_now: bool = false : set = _trigger_rebuild
+@export var proto_pivot: Node3D                     # your existing prototype pivot (with Bird child)
 
-var _proto_pivot: Node3D
+# --- Updraft (physics/energy) ---
+@export var updraft_enabled: bool = true
+@export var lift_accel_mps2: float = 60.0
+@export var max_up_speed_mps: float = 18.0
+@export var center_pull_mps2: float = 1.5
+@export var energy_refill_per_sec: float = 12.0
+@export var only_affect_group: StringName = &\"players\"   # \"\" = affect any CharacterBody3D
+
 var _pivots: Array[Node3D] = []
+var _updraft: Area3D
+var _inside := {}   # set of bodies inside updraft
 
 func _ready() -> void:
-    _find_prototype()
+    assert(proto_pivot)
+    _ensure_updraft()
     _rebuild()
+    _apply_collider()
 
 func _process(delta: float) -> void:
     if Engine.is_editor_hint():
@@ -30,54 +43,82 @@ func _process(delta: float) -> void:
 
     var yaw_step := deg_to_rad(orbit_deg_per_sec) * delta * float(direction)
     for pivot in _pivots:
-        if pivot.get_child_count() == 0: continue
+        if pivot.get_child_count() == 0:
+            continue
         var bird := pivot.get_child(0) as Node3D
 
         pivot.rotate_y(yaw_step)
 
+        # model head -> -Z; fly along tangent
         var tangent := (-pivot.basis.z * float(direction)).normalized()
         bird.look_at(bird.global_position + tangent, Vector3.UP)
 
+        # bank toward center (inner wing lower)
         var to_center := (pivot.global_position - bird.global_position).normalized()
         var side: float = sign(float(tangent.cross(to_center).y))
-        bird.rotation_degrees.z = bank_deg * side   # note: removed the minus
-        
-        
+        bird.rotation_degrees.z = bank_deg * side
+
+func _physics_process(delta: float) -> void:
+    if Engine.is_editor_hint() or not updraft_enabled or _inside.is_empty():
+        return
+
+    var center := global_transform.origin
+
+    for body in _inside.keys():
+        if not is_instance_valid(body):
+            continue
+        if only_affect_group != StringName(\"\") and not body.is_in_group(only_affect_group):
+            continue
+        if not (body is CharacterBody3D):
+            continue
+
+        var cb := body as CharacterBody3D
+
+        # Upward lift (cap vertical speed)
+        cb.velocity.y = min(cb.velocity.y + lift_accel_mps2 * delta, max_up_speed_mps)
+
+        # Gentle inward pull in XZ plane
+        if center_pull_mps2 > 0.0:
+            var to_c := center - cb.global_transform.origin
+            var planar := Vector3(to_c.x, 0.0, to_c.z)
+            if planar.length() > 0.001:
+                cb.velocity += planar.normalized() * center_pull_mps2 * delta
+
+        # Energy refill
+        _refill_energy(cb, delta)
 
 # --- Helpers ---
-
-func _find_prototype() -> void:
-    if get_child_count() == 0:
-        push_error(\"Thermal needs 1 child Pivot with a Bird\")
-        return
-    _proto_pivot = get_child(0) as Node3D
 
 func _set_num(v: int) -> void:
     num_birds = max(1, v)
     if is_inside_tree():
         _rebuild()
+        _apply_collider()  # radius might effectively change visual expectations
 
 func _trigger_rebuild(_v: bool) -> void:
     rebuild_now = false
     if is_inside_tree():
         _rebuild()
+        _apply_collider()
 
 func _clear_generated() -> void:
     for c in get_children():
-        if c == _proto_pivot: continue
+        if c == proto_pivot or c == _updraft:
+            continue
         c.queue_free()
     _pivots.clear()
 
 func _rebuild() -> void:
-    _find_prototype()
-    if not _proto_pivot: return
+    if not proto_pivot:
+        return
+
     _clear_generated()
 
-    _proto_pivot.name = \"Pivot1\"
-    _pivots.append(_proto_pivot)
+    proto_pivot.name = \"Pivot1\"
+    _pivots.append(proto_pivot)
 
     for i in range(2, num_birds + 1):
-        var clone := _proto_pivot.duplicate(DUPLICATE_USE_INSTANTIATION) as Node3D
+        var clone := proto_pivot.duplicate(DUPLICATE_USE_INSTANTIATION) as Node3D
         clone.name = \"Pivot%d\" % i
         add_child(clone)
         _pivots.append(clone)
@@ -89,8 +130,68 @@ func _rebuild() -> void:
         pivot.rotation = Vector3(0.0, base + step * float(i), 0.0)
         if pivot.get_child_count() > 0:
             var bird := pivot.get_child(0) as Node3D
-            bird.position = Vector3(radius, height, 0.0)
+            bird.position = Vector3(radius, height, 0.0)   # (r, top, 0) in pivot space
             bird.rotation = Vector3.ZERO
+
+func _ensure_updraft() -> void:
+    _updraft = get_node_or_null(\"Updraft\") as Area3D
+    if _updraft == null:
+        _updraft = Area3D.new()
+        _updraft.name = \"Updraft\"
+        add_child(_updraft)
+        var cs := CollisionShape3D.new()
+        cs.name = \"CollisionShape3D\"
+        cs.shape = CylinderShape3D.new()
+        _updraft.add_child(cs)
+
+    if not _updraft.body_entered.is_connected(_on_body_entered):
+        _updraft.body_entered.connect(_on_body_entered)
+    if not _updraft.body_exited.is_connected(_on_body_exited):
+        _updraft.body_exited.connect(_on_body_exited)
+
+    _apply_collider()
+
+func _apply_collider() -> void:
+    if _updraft == null:
+        return
+    var cs := _updraft.get_node_or_null(\"CollisionShape3D\") as CollisionShape3D
+    if cs == null:
+        cs = CollisionShape3D.new()
+        cs.name = \"CollisionShape3D\"
+        cs.shape = CylinderShape3D.new()
+        _updraft.add_child(cs)
+
+    var cyl := cs.shape as CylinderShape3D
+    if cyl == null:
+        cyl = CylinderShape3D.new()
+        cs.shape = cyl
+
+    # single source of truth:
+    cyl.radius = radius
+    cyl.height = height              # bottom at y=0, top at y=height
+
+    # place the Area so cylinder is centered at y = height/2 (top at 'height')
+    _updraft.transform.origin = Vector3(0.0, height * 0.5, 0.0)
+
+func _on_body_entered(body: Node) -> void:
+    _inside[body] = true
+    if body.has_method(\"enter_thermal\"):
+        body.call_deferred(\"enter_thermal\")
+
+func _on_body_exited(body: Node) -> void:
+    _inside.erase(body)
+    if body.has_method(\"exit_thermal\"):
+        body.call_deferred(\"exit_thermal\")
+
+
+func _refill_energy(node: Node, delta: float) -> void:
+    # Amount to add this tick
+    var amount := energy_refill_per_sec * delta
+
+    var er :Energy = node.energy_resource
+    if er != null and er is Energy:
+        (er as Energy).regen(amount)
+        return
 "
 
 [sub_resource type="BoxMesh" id="BoxMesh_w3e2l"]
@@ -107,13 +208,14 @@ height = 0.26
 [sub_resource type="BoxMesh" id="BoxMesh_o2rph"]
 size = Vector3(0.1, 0.1, 0.1)
 
-[node name="Thermal" type="Node3D"]
+[node name="Thermal" type="Node3D" node_paths=PackedStringArray("proto_pivot")]
 script = SubResource("GDScript_6od1j")
 num_birds = 4
 radius = 16.0
 height = 80.0
 orbit_deg_per_sec = 20.0
 bank_deg = 30.0
+proto_pivot = NodePath("Pivot1")
 
 [node name="Pivot1" type="Node3D" parent="."]
 
