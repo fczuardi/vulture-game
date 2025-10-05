@@ -47,6 +47,7 @@ height = 5
 [node name="Player" parent="." node_paths=PackedStringArray("cam_rig") instance=ExtResource("1_ig7tw")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 70, 0)
 cam_rig = NodePath("../CameraRig")
+energy_resource = ExtResource("2_7mycd")
 
 [node name="CameraRig" parent="." instance=ExtResource("2_h2yge")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 70, 0)
