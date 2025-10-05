@@ -1,10 +1,11 @@
-[gd_scene load_steps=18 format=3 uid="uid://cflocf5wgc4pg"]
+[gd_scene load_steps=19 format=3 uid="uid://cflocf5wgc4pg"]
 
 [ext_resource type="PackedScene" uid="uid://3753u4ch20n2" path="res://scenes/vulture.tscn" id="1_ig7tw"]
 [ext_resource type="Resource" uid="uid://s6facu7fxrhq" path="res://resources/vulture_energy.tres" id="2_7mycd"]
 [ext_resource type="PackedScene" uid="uid://bkcir3vq7cq48" path="res://scenes/camera_rig.tscn" id="2_h2yge"]
 [ext_resource type="PackedScene" uid="uid://ci5ibqk2a7l3i" path="res://scenes/world.tscn" id="3_1bvp3"]
 [ext_resource type="PackedScene" uid="uid://d1btpa7ykn80c" path="res://scenes/mobile_input.tscn" id="4_1bvp3"]
+[ext_resource type="PackedScene" uid="uid://dqv4mwwn1jody" path="res://scenes/thermal.tscn" id="4_choun"]
 [ext_resource type="Script" uid="uid://h8oxbc727lmq" path="res://ui/energy_bar.gd" id="6_272bh"]
 [ext_resource type="Script" uid="uid://bwl8vnwkkjyc6" path="res://ui/hunger_bar.gd" id="6_kek77"]
 [ext_resource type="Script" uid="uid://dgn78q1wtg04j" path="res://gameplay/hunger_ticker.gd" id="8_4c57u"]
@@ -48,11 +49,46 @@ height = 5
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 70, 0)
 cam_rig = NodePath("../CameraRig")
 energy_resource = ExtResource("2_7mycd")
+climb_energy_per_sec = 50.0
+pitch_speed = 2.0
+pitch_return = 1.8
 
 [node name="CameraRig" parent="." instance=ExtResource("2_h2yge")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 70, 0)
+mouse_requires_rmb = true
+
+[node name="Thermals" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 70, 0)
+
+[node name="Thermal1" parent="Thermals" instance=ExtResource("4_choun")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0024948, -70, -101.35143)
+
+[node name="Thermal2" parent="Thermals" instance=ExtResource("4_choun")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 324.71426, -70, -11.985252)
+num_birds = 6
+height = 90.0
+
+[node name="Thermal3" parent="Thermals" instance=ExtResource("4_choun")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 435.6835, -70, -340.81732)
+num_birds = 6
+height = 100.0
+
+[node name="Thermal4" parent="Thermals" instance=ExtResource("4_choun")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 226.65717, -70, -340.81732)
+num_birds = 2
+radius = 8.0
+height = 100.0
+orbit_deg_per_sec = 10.0
+
+[node name="Thermal5" parent="Thermals" instance=ExtResource("4_choun")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -155.57028, -70, -340.81732)
+num_birds = 10
+radius = 30.0
+height = 40.0
+orbit_deg_per_sec = 15.0
 
 [node name="World" parent="." instance=ExtResource("3_1bvp3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -65.70006, 0, 61.46762)
 
 [node name="HUD" type="Control" parent="."]
 layout_mode = 3
@@ -115,7 +151,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "Build ID: vssoxxzu "
+text = "Build ID: ypqtvyur "
 horizontal_alignment = 2
 vertical_alignment = 2
 
